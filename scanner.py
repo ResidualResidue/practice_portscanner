@@ -20,17 +20,27 @@ def validate_port_range_low_to_high(low_port, high_port):
         print(f"ERROR: {low_port} is greater than or equal to {high_port} in range '{low_port}-{high_port}'")
 
 def get_ports_from_range(low_port, high_port):
-    return list(range(int(low_port), int(high_port)+1))
+    return list(range(int(low_port), int(high_port)))
 
 def parse_ports(ports: str) -> list:
     port_ranges = ports.split('-')
     validate_port_range_syntax(port_ranges)
+    final_ports_to_scan = []
     for i in range(0, len(port_ranges)-1):
-        low_port = port_ranges[i].split(',')[-1]
-        high_port = port_ranges[i+1].split(',')[0]
+
+        port_range_low = port_ranges[i].split(',')
+        port_range_high = port_ranges[i+1].split(',')
+        
+        low_port = port_range_low[-1]
+        high_port = port_range_high[0]
         validate_port_range_low_to_high(low_port, high_port)
         ports_from_range = get_ports_from_range(low_port, high_port)
-        print(ports_from_range)
+        final_ports_to_scan += port_range_low[0:-1]
+        final_ports_to_scan += ports_from_range
+
+    final_ports_to_scan += port_ranges[-1].split(',')[0:]
+
+    print(final_ports_to_scan)
 
 
 parser = argparse.ArgumentParser(

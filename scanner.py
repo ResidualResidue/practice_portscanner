@@ -40,8 +40,7 @@ def parse_ports(ports: str) -> list:
 
     final_ports_to_scan += port_ranges[-1].split(',')[0:]
 
-    print(final_ports_to_scan)
-
+    return final_ports_to_scan
 
 parser = argparse.ArgumentParser(
     prog="practice-scanner",
@@ -58,23 +57,31 @@ parse_ports(args.ports)
 verbose=args.verbose
 host=args.host
 
-if(not host or (host == '')):
-    print("Invalid arguments")
-    sys.exit()
+ports=parse_ports(args.ports)
 
-ports=range(0, 100)
-
+closed_ports = []
+open_ports = []
 
 
-# scanner = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+scanner = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+print("[+] Initiating scan...")
+if(verbose):
+    print("[+] Ports to scan: {}", ports)
+for port in ports:
+    connection_info = (host,port)
+    try:
+        scanner.connect(connection_info)
+        open_ports.append(port)
+        if(verbose):
+            print(f'[+] Verbose scan: Port {port} open')
+    except:
+        closed_ports.append(port)
+        if(verbose):
+            print(f'[+] Verbose scan: Port {port} closed')
+print("\n")
+print(f"[+] {len(open_ports)} open.")
+print(f"[+] {len(closed_ports)} closed (not reachable; may be filtered).")
 
-# for port in ports:
-#     connection_info = (host,port)
-#     try:
-#         scanner.connect(connection_info)
-#         print(f'Port {port} open')
-#     except:
-#         if(verbose):
-#             print(f'Port {port} closed')
-
+for port in open_ports:
+    print(f"Port {port} OPEN")
 

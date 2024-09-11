@@ -1,6 +1,7 @@
 import socket
 import argparse
 import sys
+import traceback
 
 #
 
@@ -51,8 +52,16 @@ parser = argparse.ArgumentParser(
 parser.add_argument('host')
 parser.add_argument('-v', '--verbose', action='store_true')
 parser.add_argument('-p', '--ports', action='store', help='Arguments can be in the formats:\nstart-end port\nport (single)\nport1,port2,...,portn', required=True)
+parser.add_argument('-t', '--timeout', action='store')
+
+
+timeout=3
 
 args = parser.parse_args()
+
+if(args.timeout):
+    timeout=int(args.timeout)
+
 parse_ports(args.ports)
 verbose=args.verbose
 host=args.host
@@ -63,21 +72,27 @@ closed_ports = []
 open_ports = []
 
 
-scanner = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
 print("[+] Initiating scan...")
 if(verbose):
-    print("[+] Ports to scan: {}", ports)
+    print("[+] Ports to scan: %s" % ports)
 for port in ports:
+    port = int(port)
     connection_info = (host,port)
+    scanner = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    scanner.settimeout(timeout)
     try:
+        
         scanner.connect(connection_info)
         open_ports.append(port)
         if(verbose):
             print(f'[+] Verbose scan: Port {port} open')
-    except:
+    except Exception:
         closed_ports.append(port)
         if(verbose):
             print(f'[+] Verbose scan: Port {port} closed')
+    scanner.settimeout(None)
+    scanner.close()
 print("\n")
 print(f"[+] {len(open_ports)} open.")
 print(f"[+] {len(closed_ports)} closed (not reachable; may be filtered).")
